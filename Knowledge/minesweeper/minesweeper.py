@@ -105,12 +105,14 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
+        return self.mines_found
         raise NotImplementedError
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
+        
         raise NotImplementedError
 
     def mark_mine(self, cell):
@@ -118,6 +120,7 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
+        
         raise NotImplementedError
 
     def mark_safe(self, cell):
@@ -182,6 +185,48 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
+        
+        #mark the cell as a move that has been made
+        self.moves_made(cell)
+        #mark the cell as save
+        self.mark_safe(cell)
+        #add a new sentence to the AI's knowledge base
+            #   based on the value of `cell` and `count`
+        new_sentence = Sentence(cell.nearby_mines,count)
+        
+        #don't know which one is correct
+        #self.knowledge.__add__(new_sentence)
+        self.knowledge.append(new_sentence)
+        
+        #mark any additional cells as safe or as mines
+        #if it can be concluded based on the AI's knowledge base
+        if new_sentence.count == 0:
+            for cell in new_sentence.cells:
+                self.mark_safe(cell)
+        if new_sentence.count !=0:
+            if len(new_sentence.cells) == count:
+                for cell in new_sentence.cells:
+                    self.mark_mine(cell)
+        # add any new sentences to the AI's knowledge base
+        # if they can be inferred from existing knowledge   
+        
+        #if set1 is a subset of set2 then: 
+        #we can apply -> set2 - set1 = count2 - count1
+        for i in range(len(self.knowledge.sentences)):
+            #if sentance 1 is a subset of sentance 2:
+            if self.knowledge.sentences[i].cells.issubset(self.knowledge.sentences[i-1].cells):
+                #set2 - set1 = count2 - count1
+                new_count = self.knowledge.sentences[i-1].count - self.knowledge.sentences[i].count
+                new_cells = ()
+                for cell in self.knowledge.sentences[i-1].cells:
+                    if cell not in self.knowledge.sentences[i]:
+                        new_cells.append(cell)
+                
+        
+        #add any new sentences to the AI's knowledge base
+        #       if they can be inferred from existing knowledge
+        
+        
         raise NotImplementedError
 
     def make_safe_move(self):
