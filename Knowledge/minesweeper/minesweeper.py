@@ -90,7 +90,6 @@ class Sentence():
     A sentence consists of a set of board cells,
     and a count of the number of those cells which are mines.
     """
-
     def __init__(self, cells, count):
         self.cells = set(cells)
         self.count = count
@@ -105,14 +104,21 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        return self.mines_found
+        self.known_mines = set()
+        for cell in self.cells:
+            if cell.is_mine():
+                self.known_mines.add(cell)
+        return self.known_mines
         raise NotImplementedError
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        
+        self.known_safes = set ()
+        for cell in self.cells:
+            if cell.is_safe:
+                self.known_safes.add(cell)
         raise NotImplementedError
 
     def mark_mine(self, cell):
@@ -120,7 +126,8 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        
+        cell.is_mine == False
+        cell.is_mine == True
         raise NotImplementedError
 
     def mark_safe(self, cell):
@@ -128,6 +135,8 @@ class Sentence():
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
+        cell.is_safe == True
+        cell.is_mine == False
         raise NotImplementedError
 
 
@@ -187,13 +196,12 @@ class MinesweeperAI():
         """
         
         #mark the cell as a move that has been made
-        self.moves_made(cell)
+        self.moves_made.add(cell)
         #mark the cell as save
         self.mark_safe(cell)
         #add a new sentence to the AI's knowledge base
             #   based on the value of `cell` and `count`
         new_sentence = Sentence(cell.nearby_mines,count)
-        
         #don't know which one is correct
         #self.knowledge.__add__(new_sentence)
         self.knowledge.append(new_sentence)
@@ -209,7 +217,6 @@ class MinesweeperAI():
                     self.mark_mine(cell)
         # add any new sentences to the AI's knowledge base
         # if they can be inferred from existing knowledge   
-        
         #if set1 is a subset of set2 then: 
         #we can apply -> set2 - set1 = count2 - count1
         for i in range(len(self.knowledge.sentences)):
@@ -220,13 +227,7 @@ class MinesweeperAI():
                 new_cells = ()
                 for cell in self.knowledge.sentences[i-1].cells:
                     if cell not in self.knowledge.sentences[i]:
-                        new_cells.append(cell)
-                
-        
-        #add any new sentences to the AI's knowledge base
-        #       if they can be inferred from existing knowledge
-        
-        
+                        new_cells.append(cell)      
         raise NotImplementedError
 
     def make_safe_move(self):
