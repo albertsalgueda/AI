@@ -58,7 +58,6 @@ class Minesweeper():
         within one row and column of a given cell,
         not including the cell itself.
         """
-
         # Keep count of nearby mines
         count = 0
 
@@ -240,9 +239,10 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        
-        raise NotImplementedError
-
+        for cell in self.safes:
+            if cell not in self.moves_made:
+                return cell
+                
     def make_random_move(self):
         """
         Returns a move to make on the Minesweeper board.
@@ -250,4 +250,11 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        while True:
+            i = random.randint(0,8)
+            j = random.randint(0,8)
+            new_cell = (i,j)
+            if new_cell not in self.moves_made:
+                if new_cell not in self.mines:
+                    return new_cell
+
