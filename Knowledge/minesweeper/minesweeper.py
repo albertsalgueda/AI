@@ -109,7 +109,6 @@ class Sentence():
             if cell.is_mine():
                 self.known_mines.add(cell)
         return self.known_mines
-        raise NotImplementedError
 
     def known_safes(self):
         """
@@ -119,7 +118,7 @@ class Sentence():
         for cell in self.cells:
             if cell.is_safe:
                 self.known_safes.add(cell)
-        raise NotImplementedError
+        return self.known_safes
 
     def mark_mine(self, cell):
         """
@@ -144,7 +143,6 @@ class MinesweeperAI():
     """
     Minesweeper game player
     """
-
     def __init__(self, height=8, width=8):
 
         # Set initial height and width
@@ -228,6 +226,9 @@ class MinesweeperAI():
                 for cell in self.knowledge.sentences[i-1].cells:
                     if cell not in self.knowledge.sentences[i]:
                         new_cells.append(cell)      
+                new_sentence = Sentence(new_cells,new_count)
+                self.knowledge.append(new_sentence)
+
         raise NotImplementedError
 
     def make_safe_move(self):
@@ -239,6 +240,7 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
+        
         raise NotImplementedError
 
     def make_random_move(self):
