@@ -103,41 +103,38 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        self.known_mines = set()
-        for cell in self.cells:
-            if cell.is_mine():
-                self.known_mines.add(cell)
-        return self.known_mines
+        if len(self.cells) == self.count:
+            return set(self.cells)
+        return set()
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        self.known_safes = set ()
-        for cell in self.cells:
-            if cell.is_safe:
-                self.known_safes.add(cell)
-        return self.known_safes
-
+        if self.count == 0:
+            return set(self.cells)
+        return set()
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        cell.is_mine == False
-        cell.is_mine == True
-        raise NotImplementedError
-
+        if cell in self.cells:
+            self.cells.remove(cell)
+            self.count -= 1
+            return 1
+        return 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        cell.is_safe == True
-        cell.is_mine == False
-        raise NotImplementedError
-
-
+        if cell in self.cells:
+            self.cells.remove(cell)
+            return 1
+        
+        return 0
+ 
 class MinesweeperAI():
     """
     Minesweeper game player
@@ -198,38 +195,57 @@ class MinesweeperAI():
         self.mark_safe(cell)
         #add a new sentence to the AI's knowledge base
             #   based on the value of `cell` and `count`
-        new_sentence = Sentence(cell.nearby_mines,count)
-        #don't know which one is correct
-        #self.knowledge.__add__(new_sentence)
-        self.knowledge.append(new_sentence)
-        
+        #new_sentence = Sentence(cell,count)
+        #let's find out the cells that are nearby 
+        nearby = set()
+        for i in range(cell[0]-1,cell[0]+2):
+            for j in range(cell[1]-1,cell[1]+2):
+                if (i,j) == cell:
+                    continue
+                if 0 <= i < self.height and 0 <= j < self.width:
+                    if (i,j) not in self.moves_made and (i,j) not in self.safes:
+                        nearby.add((i,j))      
+        #let's create and add this new sentence   
+        if nearby !=0:
+            self.knowledge.append(Sentence(nearby,count))
+
         #mark any additional cells as safe or as mines
         #if it can be concluded based on the AI's knowledge base
-        if new_sentence.count == 0:
-            for cell in new_sentence.cells:
-                self.mark_safe(cell)
-        if new_sentence.count !=0:
-            if len(new_sentence.cells) == count:
-                for cell in new_sentence.cells:
+        for sentence in self.knowledge:
+            for cell in sentence.known_mines():
+                if cell not in self.mines:
                     self.mark_mine(cell)
+            for cell in sentence.known_safes():
+                if cell not in self.safes:
+                    self.mark_safe(cell)
         # add any new sentences to the AI's knowledge base
         # if they can be inferred from existing knowledge   
         #if set1 is a subset of set2 then: 
         #we can apply -> set2 - set1 = count2 - count1
-        for i in range(len(self.knowledge.sentences)):
+        """"
+        for i in range(len(self.knowledge)):
             #if sentance 1 is a subset of sentance 2:
-            if self.knowledge.sentences[i].cells.issubset(self.knowledge.sentences[i-1].cells):
+            if self.knowledge[i].cells.issubset(self.knowledge[i-1].cells):
                 #set2 - set1 = count2 - count1
-                new_count = self.knowledge.sentences[i-1].count - self.knowledge.sentences[i].count
+                new_count = self.knowledge[i-1].count - self.knowledge[i].count
                 new_cells = ()
-                for cell in self.knowledge.sentences[i-1].cells:
-                    if cell not in self.knowledge.sentences[i]:
+                for cell in self.knowledge[i-1].cells:
+                    if cell not in self.knowledge[i]:
                         new_cells.append(cell)      
-                new_sentence = Sentence(new_cells,new_count)
-                self.knowledge.append(new_sentence)
-
-        raise NotImplementedError
-
+                new_sentence2 = Sentence(new_cells,new_count)
+                self.knowledge.append(new_sentence2)
+        """
+        for sentence in self.knowledge:
+            for i in range(len(self.knowledge)):
+                if sentence != self.knowledge[i]:
+                    #set2 - set1 = count2 - count1
+                    if sentence.cells.issubset(self.knowledge[i].cells):
+                        self.knowledge[i].cells -= sentence.cells
+                        self.knowledge[i].count -= sentence.count 
+                    elif self.knowledge[i].cells.issubset(sentence.cells):
+                        sentence.cells -= self.knowledge[i].cells
+                        sentence.count -= self.knowledge[i].count
+                    
     def make_safe_move(self):
         """
         Returns a safe cell to choose on the Minesweeper board.
@@ -240,10 +256,10 @@ class MinesweeperAI():
         and self.moves_made, but should not modify any of those values.
         """
         for cell in self.safes:
-            if cell not in self.moves_made:
+            if cell not in self.moves_made and cell not in self.mines:
                 return cell
                 
-    def make_random_move(self):
+    def make_random_move(self): 
         """
         Returns a move to make on the Minesweeper board.
         Should choose randomly among cells that:
@@ -251,8 +267,8 @@ class MinesweeperAI():
             2) are not known to be mines
         """
         while True:
-            i = random.randint(0,8)
-            j = random.randint(0,8)
+            i = random.randint(0,7)
+            j = random.randint(0,7)
             new_cell = (i,j)
             if new_cell not in self.moves_made:
                 if new_cell not in self.mines:
