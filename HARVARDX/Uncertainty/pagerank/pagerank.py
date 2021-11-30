@@ -57,7 +57,25 @@ def transition_model(corpus, page, damping_factor):
     linked to by `page`. With probability `1 - damping_factor`, choose
     a link at random chosen from all pages in the corpus.
     """
-    raise NotImplementedError
+    #With probability damping_factor, the random surfer should randomly choose one of the links from page with equal probability.
+    #divide damping_factor into all the keys except its current page
+    thekeys = list(corpus.keys())
+    thedict = dict.fromkeys(thekeys,0)
+    linked_pages = list(corpus[page])
+    print(linked_pages)
+    for i in range(len(corpus[page])):
+        prob = damping_factor/len(linked_pages)
+        for page in thedict:
+            if page in linked_pages:
+                thedict[page] = prob
+        #prob_distribution[corpus[page][i]] = prob
+#With probability 1 - damping_factor, the random surfer should randomly choose one of all pages in the corpus with equal probability.
+    second_prob = (1-damping_factor)/len(thedict)
+    for page in thedict:
+        thedict[page] = thedict[page] + second_prob
+    print(thedict)
+    return thedict
+
 
 
 def sample_pagerank(corpus, damping_factor, n):
@@ -69,8 +87,35 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
-
+    sum1 = 0
+    sum2 = 0
+    sum3 = 0
+    sum4 = 0
+    samples = []
+    pageRank = {"1.html":0,"2.html":0,"3.html":0,"4.html":0}
+    print(corpus)
+    for i in range(n):
+        random_page = random.randint(0,(len(corpus)-1))
+        corpus_keys = list(corpus.keys())
+        page = corpus_keys[random_page]
+        samples.append(transition_model(corpus,page,damping_factor))
+    for index in range(n):
+        for key in samples[index]:
+            if key == "1.html":
+                sum1 = sum1 + samples[index][key]
+            elif key == "2.html":
+                sum2 = sum2 + samples[index][key]
+            elif key == "3.html":
+                sum3 = sum3 + samples[index][key]
+            elif key == "4.html":
+                sum4 = sum4 + samples[index][key]
+    print(sum1,sum2,sum3,sum4)
+    pageRank["1.html"] = sum1/10000
+    pageRank["2.html"] = sum2/10000
+    pageRank["3.html"] = sum3/10000
+    pageRank["4.html"] = sum4/10000
+    print(pageRank)
+    return pageRank
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -81,8 +126,8 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    raise NotImplementedError
-
+    print("TODO")
+    return 0
 
 if __name__ == "__main__":
     main()
