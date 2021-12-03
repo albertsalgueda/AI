@@ -2,9 +2,10 @@ import os
 import random
 import re
 import sys
+import collections, functools, operator
 
 DAMPING = 0.85
-SAMPLES = 10
+SAMPLES = 10000
 
 
 def main():
@@ -85,38 +86,25 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    sum1 = 0
-    sum2 = 0
-    sum3 = 0
-    sum4 = 0
-    totalsum = [0,0,0,0]
     samples = []
-    pageRank = {"1.html":0,"2.html":0,"3.html":0,"4.html":0}
-    #print(corpus)
+    
     for i in range(n):
         random_page = random.randint(0,(len(corpus)-1))
         corpus_keys = list(corpus.keys())
         page = corpus_keys[random_page]
-        samples.append(transition_model(corpus,page,damping_factor))
-    for index in range(n):
-        for key in samples[index]:
-            if key == "1.html":
-                totalsum[0] = int(totalsum[0] + int(samples[index][key]))
-                print(int(totalsum[0] + int(samples[index][key])))
-                print(totalsum)
-            elif key == "2.html":
-                totalsum[1]= int(totalsum[1]) + int(samples[index][key])
-                print(totalsum)
-            elif key == "3.html":
-                totalsum[2] = int(totalsum[2]) + int(samples[index][key])
-            elif key == "4.html":
-                totalsum[3] = int(totalsum[3]) + int(samples[index][key])
-    pageRank["1.html"] = sum1/10000
-    pageRank["2.html"] = sum2/10000
-    pageRank["3.html"] = sum3/10000
-    pageRank["4.html"] = sum4/10000
+        samples.append(transition_model(corpus,page,damping_factor)) #list of dictionaries
+    #pageRank = dict.fromkeys(corpus_keys,0)
     #print(pageRank)
-    return pageRank
+    #print(samples)
+    #print(pageRank)
+    #sum list of dictionaries with the same key 
+    pageRank = dict(functools.reduce(operator.add,
+         map(collections.Counter, samples)))
+    #divide all values x n
+    a = {k: v / n for k, v in pageRank.items()}        
+    #print(a)
+    #print(pageRank)
+    return a
 
 def iterate_pagerank(corpus, damping_factor):
     """
@@ -127,14 +115,38 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    pageRank = {"1.html":0,"2.html":0,"3.html":0,"4.html":0}
-    sum1 = 0
-    sum2 = 0
-    sum3 = 0
-    sum4 = 0
-    samples = []
-    
-    return 0
+    #let's grab all the variables for the algorithm
+    N = len(corpus)
+    corpus_keys = list(corpus.keys())
+    pageRank = dict.fromkeys(corpus_keys,0)
+    links = dict.fromkeys(corpus_keys,0)
+    k = (1-damping_factor)/N 
+    #links dictionary represents the number of links on each page
+    for page in corpus:
+        links[page] = len(corpus[page])
+    #every page is 1 / N (i.e., equally likely to be on any page)
+    for page in pageRank:
+        pageRank[page] = 1/N
+        #print(page)
+    #print(pageRank)
+    #apply the formula 
+    def pr(page):
+        a=0
+        rank = 0
+        #print(numlinks)
+        for linked_page in corpus[page]:
+            #print(pageRank.get(linked_page)/numlinks)
+            numlinks = int(links[linked_page])
+            a = a + pageRank.get(linked_page)/numlinks
+        rank = k + damping_factor*a
+        return rank
+    #iterate over it for N times
+    for i in range(N):
+        for page in pageRank:
+            pageRank[page] = pr(page)
+            #print(pageRank)
+    #print(pageRank)
+    return pageRank
 
 if __name__ == "__main__":
     main()
