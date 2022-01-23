@@ -105,11 +105,15 @@ def shortest_path(source, target):
     #expand node by getting the neighbours ( ojo que ell mateix estarà inclòs)
     #if neighbour contains goal state, return solution
     while True:
-        #if nothing left to explore, no solutio
+        #remove node from the frontier
         node = frontier.remove()
+        #add node to the explored
         explored.add(node.state)
+        #get neighbours
         neighbours = neighbors_for_person(node.state) #dictionary made of lists that contain MovieID, personID
+        #iterate 
         for movie, person in neighbours:
+            #if it's not in the froniter now in the explored
             if not frontier.contains_state(person) and person not in explored:
                 new = Node(person,node,movie)
             #if target in node, return solution
@@ -120,6 +124,7 @@ def shortest_path(source, target):
                     new = new.parent
                 solution.reverse()
                 return solution
+            #add to the frontier and repeat the process
             frontier.add(new)
 
 def person_id_for_name(name):
