@@ -1,3 +1,4 @@
+from asyncio import DatagramProtocol
 import os
 import random
 import re
@@ -5,7 +6,7 @@ import sys
 import collections, functools, operator
 
 DAMPING = 0.85
-SAMPLES = 10000
+SAMPLES = 50000
 
 
 def main():
@@ -73,7 +74,7 @@ def transition_model(corpus, page, damping_factor):
 #With probability 1 - damping_factor, the random surfer should randomly choose one of all pages in the corpus with equal probability.
     second_prob = (1-damping_factor)/len(thedict)
     for page in thedict:
-        thedict[page] = thedict[page] + second_prob
+        thedict[page] = round((thedict[page] + second_prob),4)
     #print(thedict)
     return thedict
 
@@ -87,9 +88,14 @@ def sample_pagerank(corpus, damping_factor, n):
     PageRank values should sum to 1.
     """
     samples = []
-    
+    range_pages = list(range(0,(len(corpus))))
     for i in range(n):
-        random_page = random.randint(0,(len(corpus)-1))
+        if i==0:
+            random_page = random.randint(0,(len(corpus)-1))
+        else:
+            Weights = samples[-1].values()
+            random_page = int(random.choices(range_pages,weights=Weights,k=1)[0])
+            #print(Weights, random_page)
         corpus_keys = list(corpus.keys())
         page = corpus_keys[random_page]
         samples.append(transition_model(corpus,page,damping_factor)) #list of dictionaries
@@ -101,52 +107,46 @@ def sample_pagerank(corpus, damping_factor, n):
     pageRank = dict(functools.reduce(operator.add,
          map(collections.Counter, samples)))
     #divide all values x n
-    a = {k: v / n for k, v in pageRank.items()}        
+    a = {k: round((v / n),4) for k, v in pageRank.items()}        
     #print(a)
     #print(pageRank)
     return a
+
+def recursive(corpus,damping_factor,pageRank):
+    
+    outcome = {}
+    for key in pageRank:
+        hence = 0
+        for kay in corpus:
+            if key in corpus[kay]:
+                hence = hence + pageRank[kay]/len(corpus[kay])
+        now = (1-damping_factor)/len(corpus) + damping_factor*hence
+        outcome[key] = pageRank[key]
+        pageRank[key] = now
+        
+    for key in pageRank:
+        if pageRank[key] - outcome[key] < 0.001 and outcome[key] - pageRank[key]<0.001:
+            continue
+        else:
+            return recursive(corpus,damping_factor,pageRank)
+    
+    return pageRank
+            
 
 def iterate_pagerank(corpus, damping_factor):
     """
     Return PageRank values for each page by iteratively updating
     PageRank values until convergence.
-
     Return a dictionary where keys are page names, and values are
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
     #let's grab all the variables for the algorithm
-    N = len(corpus)
-    corpus_keys = list(corpus.keys())
-    pageRank = dict.fromkeys(corpus_keys,0)
-    links = dict.fromkeys(corpus_keys,0)
-    k = (1-damping_factor)/N 
-    #links dictionary represents the number of links on each page
-    for page in corpus:
-        links[page] = len(corpus[page])
-    #every page is 1 / N (i.e., equally likely to be on any page)
-    for page in pageRank:
-        pageRank[page] = 1/N
-        #print(page)
-    #print(pageRank)
-    #apply the formula 
-    def pr(page):
-        a=0
-        rank = 0
-        #print(numlinks)
-        for linked_page in corpus[page]:
-            #print(pageRank.get(linked_page)/numlinks)
-            numlinks = int(links[linked_page])
-            a = a + pageRank.get(linked_page)/numlinks
-        rank = k + damping_factor*a
-        return rank
-    #iterate over it for N times
-    for i in range(N):
-        for page in pageRank:
-            pageRank[page] = pr(page)
-            #print(pageRank)
-    #print(pageRank)
-    return pageRank
+    pageRank = {}
+    for key in corpus:
+        pageRank[key] = 1/len(corpus)
+    outcome = recursive(corpus,damping_factor,pageRank) 
+    return outcome
 
 if __name__ == "__main__":
     main()
