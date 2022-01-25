@@ -99,17 +99,12 @@ def sample_pagerank(corpus, damping_factor, n):
         corpus_keys = list(corpus.keys())
         page = corpus_keys[random_page]
         samples.append(transition_model(corpus,page,damping_factor)) #list of dictionaries
-    #pageRank = dict.fromkeys(corpus_keys,0)
-    #print(pageRank)
-    #print(samples)
-    #print(pageRank)
-    #sum list of dictionaries with the same key 
+
     pageRank = dict(functools.reduce(operator.add,
          map(collections.Counter, samples)))
     #divide all values x n
     a = {k: round((v / n),4) for k, v in pageRank.items()}        
-    #print(a)
-    #print(pageRank)
+  
     return a
 
 def recursive(corpus,damping_factor,pageRank):
