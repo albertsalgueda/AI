@@ -78,18 +78,16 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
-    diagonal1= []
-    diagonal2= []
+    diagonal1 = []
+    diagonal2 = []
     #check horizontally
     for row in board:
         if row.count(X) == 3:
             return X
         elif row.count(O) == 3:
             return O
-    #check diagonal and vertical
+    #check vertical
     for i in range(len(board)):
-        diagonal1.append(board[i][i] )
-        diagonal2.append(board[i][len(board)-i-1])
         vertical = []
         for j in range(len(board)):
             vertical.append(board[j][i])
@@ -97,18 +95,25 @@ def winner(board):
             return X
         elif all(elem==O for elem in vertical):
             return O
-    if all(elem==X for elem in diagonal1 or diagonal2):
+    #check diagonales
+    for i in range(len(board)):
+      diagonal1.append(board[i][i])
+      diagonal2.append(board[i][len(board)-i-1])
+    if all(elem==X for elem in diagonal1):
         return X
-    elif all(elem==O for elem in diagonal1 or diagonal2):
+    elif all(elem==O for elem in diagonal1):
+        return O
+    elif all(elem==X for elem in diagonal2):
+        return X
+    elif all(elem==O for elem in diagonal2):
         return O
     
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
-    result = [item for row in board for item in row if item == EMPTY]
-    #print(result)
-    if len(result) == 0:
+    #print(winner(board))
+    if winner(board) != None:
         return True
     return False
 
@@ -138,17 +143,19 @@ def minimax(board):
         explored_actions = {}
         for action in actions(board):
             explored_actions[action] = minvalue(result(board, action))
+            print(explored_actions)
         return max(explored_actions, key=explored_actions.get)
     elif current_player == O:
         explored_actions = {}
         for action in actions(board):
             explored_actions[action] = maxvalue(result(board, action))
+            print(explored_actions)
         return min(explored_actions, key=explored_actions.get)
     
 def maxvalue(board):
     if terminal(board):
         return utility(board)
-    v = -INFINITY
+    v = -1
     possible_actions = actions(board)
     for action in possible_actions:
         v = max(v,minvalue(result(board,action)))
@@ -157,8 +164,17 @@ def maxvalue(board):
 def minvalue(board):
     if terminal(board):
         return utility(board)
-    v = INFINITY
+    v = 1
     possible_actions = actions(board)
     for action in possible_actions:
         v = min(v,maxvalue(result(board,action)))
     return v
+
+"""
+board = [[X, O, O],
+        [X, O, O],
+        [O, None, X]]
+
+print(terminal(board))
+
+"""
