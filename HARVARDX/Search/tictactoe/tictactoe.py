@@ -5,6 +5,7 @@ Tic Tac Toe Player
 from json.encoder import INFINITY
 import math
 from multiprocessing.sharedctypes import Value
+from pickle import TRUE
 
 X = "X"
 O = "O"
@@ -107,15 +108,25 @@ def winner(board):
         return X
     elif all(elem==O for elem in diagonal2):
         return O
+
+def tie(board):
+    count = (len(board)*len(board[0]))
+    for row in range(len(board)):
+        for item in range(len(board[0])):
+            if board[row][item] is not EMPTY:
+                count -=1
+    return count == 0
+            
     
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
     #print(winner(board))
-    if winner(board) != None:
+    if winner(board) or tie(board):
         return True
-    return False
+    else:
+        return False
 
 
 def utility(board):
@@ -143,19 +154,19 @@ def minimax(board):
         explored_actions = {}
         for action in actions(board):
             explored_actions[action] = minvalue(result(board, action))
-            print(explored_actions)
+            #print(explored_actions)
         return max(explored_actions, key=explored_actions.get)
     elif current_player == O:
         explored_actions = {}
         for action in actions(board):
             explored_actions[action] = maxvalue(result(board, action))
-            print(explored_actions)
+            #print(explored_actions)
         return min(explored_actions, key=explored_actions.get)
     
 def maxvalue(board):
     if terminal(board):
         return utility(board)
-    v = -1
+    v = -INFINITY
     possible_actions = actions(board)
     for action in possible_actions:
         v = max(v,minvalue(result(board,action)))
@@ -164,7 +175,7 @@ def maxvalue(board):
 def minvalue(board):
     if terminal(board):
         return utility(board)
-    v = 1
+    v = INFINITY
     possible_actions = actions(board)
     for action in possible_actions:
         v = min(v,maxvalue(result(board,action)))
@@ -172,7 +183,7 @@ def minvalue(board):
 
 """
 board = [[X, O, O],
-        [X, O, O],
+        [X, O, O],x
         [O, None, X]]
 
 print(terminal(board))
