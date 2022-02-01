@@ -116,7 +116,7 @@ class CrosswordCreator():
         False if no revision was made.
         """
         #A conflict in the context of the crossword puzzle is a square for which two variables disagree on what character value it should take on.)
-        overlap = self.crossword.overlaps[x][y]  
+        overlap = self.crossword.overlaps[x,y]  
         # will return a tupple (i,j) ith positionn in x and jth position in y 
         i = overlap[0]
         j = overlap[1]
@@ -142,33 +142,26 @@ class CrosswordCreator():
         #create the list of arcs 
         if arcs is None:
             for arc in self.crossword.variables:
-                for arc2 in self.crossword.neighbours(arc):
+                for arc2 in self.crossword.neighbors(arc):
                     if arc != arc2:
-                        arcs.append(tuple(arc,arc2))
+                        my_arcs.append((arc,arc2))
             starting = False
         if starting:
             queue = arcs
         else:
-            queue = my_arcs 
-            
-        def DEQUEUE(queue):
-            #can be implemented better
-            return queue.pop()
-        
-        def ENQUEUE(queue,tupple):
-            return queue.append(tupple)
+            queue = my_arcs       
         
         while queue is not None:
-            (x,y) = DEQUEUE(queue) 
+            (x,y) = queue.pop()
             if self.revise(x,y):
                 if len(self.domains[x])== 0:
                     #nothing else to explore 
                     return False
-                neighbours = copy.deepcopy(self.crossword.neighbours(x))
-                if y in neighbours: 
-                    neighbours = neighbours - {y}
-                for z in neighbours:
-                    queue =  ENQUEUE(queue,tuple(z,y))
+                neighbors = copy.deepcopy(self.crossword.neighbors(x))
+                if y in neighbors: 
+                    neighbors = neighbors - {y}
+                for z in neighbors:
+                    queue.append((z,x))
             return True
 
     def assignment_complete(self, assignment):
@@ -196,7 +189,7 @@ class CrosswordCreator():
         for var in assignment:
             domain = assignment[var]
             #every value is the correct length
-            if len(domain) != var.lenght:
+            if len(domain) != var.length:
                 return False
             #all values are distinct, no overlaps
             for var2 in assignment:
@@ -246,7 +239,7 @@ class CrosswordCreator():
             return assignment
         var = self.select_unassigned_variable(assignment)
         for value in self.domains[var]:
-            new = assignment.copxy()
+            new = assignment.copy()
             new[var] = value
             if self.consistent(new):
                 result = self.backtrack(new)
@@ -276,7 +269,6 @@ def main():
         creator.print(assignment)
         if output:
             creator.save(assignment, output)
-
 
 if __name__ == "__main__":
     main()
