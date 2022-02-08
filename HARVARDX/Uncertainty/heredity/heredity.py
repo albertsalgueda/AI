@@ -145,7 +145,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
     #people['Harry']['gene'] = 1
     #print(people['Harry']['gene'])
     persons = {}
-    
+    mut = 0.01
     class People():
         def __init__(self,name,mother,father):
             self.name = name
@@ -156,7 +156,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         def add_trait(self,trait):
             self.trait = trait
         def is_parent(self):
-            if self.mother != None:
+            if self.mother == None:
                 return True
             else: 
                 return False
@@ -171,7 +171,7 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             person.add_gene(1)
         elif person.name in two_genes:
             person.add_gene(2)
-        else: 
+        elif person.name not in one_gene and person.name not in two_genes: 
             person.add_gene(0)
         if person.name in have_trait:
             person.add_trait(True)
@@ -179,23 +179,56 @@ def joint_probability(people, one_gene, two_genes, have_trait):
             person.add_trait(False)
         persons[person.name] = person
 
-    for person in persons:
-        if persons[people[person]['name']].trait == True:
-            probabilities = PROBS["gene"][persons[people[person]['name']].gene]*PROBS["trait"][persons[people[person]['name']].gene][True]
+    for person in people:
+        if persons[people[person]['name']].is_parent():
+            probabilities =  PROBS["gene"][persons[people[person]['name']].gene]*PROBS["trait"][persons[people[person]['name']].gene][persons[people[person]['name']].trait]
             joined.add(probabilities)
-        elif persons[people[person]['name']].trait == False:
-            probabilities =  PROBS["gene"][persons[people[person]['name']].gene]*PROBS["trait"][persons[people[person]['name']].gene][False]
-            joined.add(probabilities)
+        #bug must be heref
         else:
-            P_mother = persons[persons[people[person]['name']].mother].has_gene()
-            P_father = persons[persons[people[person]['name']].father].has_gene()
-            if persons[people[person]['name']].gene == 1:
-                probs1 = P_mother*abs((1-P_father)) + P_father*abs((1-P_mother))
-            elif persons[people[person]['name']].gene == 0:
-                probs1 =abs((1-P_father))*abs((1-P_mother))                   
-            else:
-                probs1 = P_father*P_mother
-            print(persons[people[person]['name']].trait)
+            #gets 0.99 if parent has get and 0.01 otherwise  
+            mother = persons[persons[people[person]['name']].mother].gene
+            father = persons[persons[people[person]['name']].father].gene
+            if persons[people[person]['name']].gene == 0:
+                if mother==0 and father==0:
+                    probs1 = (0.99*0.99) #good
+                elif (mother==0 and father==1) or  (mother==1 and father==0):
+                    probs1 = (0.99*.5) #good
+                elif (mother==0 and father==2) or  (mother==2 and father==0):
+                    probs1 = (0.99*mut) #good
+                elif (mother==1 and father==1): 
+                    probs1 = (.5*.5) #good
+                elif (mother==0 and father==2) or  (mother==2 and father==0):
+                    probs1 = (0.99*0.5) #good
+                elif (mother==1 and father==2) or  (mother==2 and father==1):
+                    probs1 = (0.5*mut) #good
+                else:
+                    probs1 = mut*mut #good 
+            elif persons[people[person]['name']].gene == 1:
+                if mother==0 and father==0:
+                    probs1 = (mut*0.99)*2 #good 
+                elif (mother==0 and father==1) or  (mother==1 and father==0):
+                    probs1 = 0.99*0.5 + 0.01*0.5
+                elif (mother==0 and father==2) or  (mother==2 and father==0):
+                    probs1 = (0.99**2 + mut*mut) #GOOD
+                elif (mother==1 and father==1): 
+                    probs1 = (0.5*0.5)*2
+                elif (mother==1 and father==2) or  (mother==2 and father==1):
+                    probs1 = 0.5*mut + 0.5*0.99
+                else: # 2,2
+                    probs1 = (0.99*mut)*2 #good 
+            elif persons[people[person]['name']].gene == 2:
+                if mother==0 and father==0:
+                    probs1 = (mut*mut) #good    
+                elif (mother==0 and father==1) or  (mother==1 and father==0):
+                    probs1 = mut*0.5
+                elif (mother==1 and father==1):
+                    probs1 = 0.5*0.5
+                elif (mother==0 and father==2) or  (mother==2 and father==0):
+                    probs1 = (0.99*mut) #good
+                elif (mother==1 and father==2) or  (mother==2 and father==1):
+                    probs1 = 0.5*0.99
+                else:
+                    probs1 = (0.99)**2 #good 
             probabilities = probs1*PROBS["trait"][persons[people[person]['name']].gene][persons[people[person]['name']].trait]
             joined.add(probabilities)
     joined_probabilities=1
