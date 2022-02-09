@@ -1,7 +1,8 @@
 import sys
 import copy
-from crossword import *
+from crossword import Variable,Crossword
 
+# python generate.py data/structure0.txt data/words0.txt 
 
 class CrosswordCreator():
 
