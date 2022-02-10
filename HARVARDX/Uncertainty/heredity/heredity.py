@@ -2,7 +2,7 @@ import csv
 import itertools
 import sys
 
-#python heredity.py data/family0.csv
+#python heredity.py data/family2.csv
 
 PROBS = {
 
@@ -141,100 +141,47 @@ def joint_probability(people, one_gene, two_genes, have_trait):
         * everyone in set `have_trait` has the trait, and
         * everyone not in set` have_trait` does not have the trait.
     """
-    joined = set()
-    #people['Harry']['gene'] = 1
-    #print(people['Harry']['gene'])
-    persons = {}
-    mut = 0.01
-    class People():
-        def __init__(self,name,mother,father):
-            self.name = name
-            self.mother = mother
-            self.father = father
-        def add_gene(self,gene):
-            self.gene = gene
-        def add_trait(self,trait):
-            self.trait = trait
-        def is_parent(self):
-            if self.mother == None:
-                return True
-            else: 
-                return False
-        def has_gene(self):
-            if self.gene !=0:
-                return 0.99
-            return 0.01
-    
-    for person in people:
-        person = People(people[person]['name'],people[person]['mother'],people[person]['father'])
-        if person.name in one_gene:
-            person.add_gene(1)
-        elif person.name in two_genes:
-            person.add_gene(2)
-        elif person.name not in one_gene and person.name not in two_genes: 
-            person.add_gene(0)
-        if person.name in have_trait:
-            person.add_trait(True)
-        else:
-            person.add_trait(False)
-        persons[person.name] = person
+    joined = 1
 
     for person in people:
-        if persons[people[person]['name']].is_parent():
-            probabilities =  PROBS["gene"][persons[people[person]['name']].gene]*PROBS["trait"][persons[people[person]['name']].gene][persons[people[person]['name']].trait]
-            joined.add(probabilities)
-        #bug must be heref
+        #get the gene of the current person
+        gene_number = 1 if person in one_gene else 2 if person in two_genes else 0
+        #get the trait of the current person 
+        trait = True if person in have_trait else False
+        #if we have no info about the parents
+        if people[person]['mother'] is None:   
+            #use probability distribution
+            joined *= PROBS['gene'][gene_number] * PROBS['trait'][gene_number][trait]
+        #if we have info about the parents
         else:
-            #gets 0.99 if parent has get and 0.01 otherwise  
-            mother = persons[persons[people[person]['name']].mother].gene
-            father = persons[persons[people[person]['name']].father].gene
-            if persons[people[person]['name']].gene == 0:
-                if mother==0 and father==0:
-                    probs1 = (0.99*0.99) #good
-                elif (mother==0 and father==1) or  (mother==1 and father==0):
-                    probs1 = (0.99*.5) #good
-                elif (mother==0 and father==2) or  (mother==2 and father==0):
-                    probs1 = (0.99*mut) #good
-                elif (mother==1 and father==1): 
-                    probs1 = (.5*.5) #good
-                elif (mother==0 and father==2) or  (mother==2 and father==0):
-                    probs1 = (0.99*0.5) #good
-                elif (mother==1 and father==2) or  (mother==2 and father==1):
-                    probs1 = (0.5*mut) #good
-                else:
-                    probs1 = mut*mut #good 
-            elif persons[people[person]['name']].gene == 1:
-                if mother==0 and father==0:
-                    probs1 = (mut*0.99)*2 #good 
-                elif (mother==0 and father==1) or  (mother==1 and father==0):
-                    probs1 = 0.99*0.5 + 0.01*0.5
-                elif (mother==0 and father==2) or  (mother==2 and father==0):
-                    probs1 = (0.99**2 + mut*mut) #GOOD
-                elif (mother==1 and father==1): 
-                    probs1 = (0.5*0.5)*2
-                elif (mother==1 and father==2) or  (mother==2 and father==1):
-                    probs1 = 0.5*mut + 0.5*0.99
-                else: # 2,2
-                    probs1 = (0.99*mut)*2 #good 
-            elif persons[people[person]['name']].gene == 2:
-                if mother==0 and father==0:
-                    probs1 = (mut*mut) #good    
-                elif (mother==0 and father==1) or  (mother==1 and father==0):
-                    probs1 = mut*0.5
-                elif (mother==1 and father==1):
-                    probs1 = 0.5*0.5
-                elif (mother==0 and father==2) or  (mother==2 and father==0):
-                    probs1 = (0.99*mut) #good
-                elif (mother==1 and father==2) or  (mother==2 and father==1):
-                    probs1 = 0.5*0.99
-                else:
-                    probs1 = (0.99)**2 #good 
-            probabilities = probs1*PROBS["trait"][persons[people[person]['name']].gene][persons[people[person]['name']].trait]
-            joined.add(probabilities)
-    joined_probabilities=1
-    for prob in joined:
-        joined_probabilities = joined_probabilities*prob
-    return joined_probabilities
+            mother = people[person]['mother']
+            father = people[person]['father']
+            #create a dictionary with parents probabilities of transmition 
+            percentages = {}
+            for parent in [mother, father]:
+                #get parent's gene number
+                parent_gene = 1 if parent in one_gene else 2 if parent in two_genes else 0
+                #get the probabilities of transmition to the son
+                #0.01 if parent gene is 0
+                #0.5 if parent gene is 1 
+                #0.99 if parent gene is 2
+                probs = PROBS['mutation'] if parent_gene == 0 else 0.5 if parent_gene == 1 else 1 - PROBS['mutation']
+                #add to dictionary
+                percentages[parent] = probs
+
+            if gene_number == 0:
+                # probabilities that son has 0 genes given the probabilities of parent's transmition,
+                # none of them has passed the gene
+                joined *= (1 - percentages[mother]) * (1 - percentages[father])
+            elif gene_number == 1:
+                # 1 gene given parents 
+                joined *= (1 - percentages[mother]) * percentages[father] + percentages[mother] * (1 - percentages[father])
+            else:
+                # both parents have transmited the gene 
+                joined *= percentages[mother] * percentages[father]
+
+            joined *= PROBS['trait'][gene_number][trait]
+    return joined
     
 def update(probabilities, one_gene, two_genes, have_trait, p):
     """
