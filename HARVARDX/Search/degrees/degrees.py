@@ -3,6 +3,10 @@ import sys
 
 from util import Node, StackFrontier, QueueFrontier
 
+# Code does not appear to handle many generic path lengths (e.g., 0, 1) correctly!
+
+# python degrees.py large
+
 # Maps names to a set of corresponding person_ids
 names = {}
 
@@ -93,39 +97,48 @@ def shortest_path(source, target):
     """
     #start with an empty frontier
     frontier = QueueFrontier()
-    
-    #add initial state to the frontier
     first = Node(source,None,None)
     frontier.add(first)
     #start with an empty explored set
     explored = set()
-    #if the frontier is empty, then return no solution
-    if frontier == 0:
-        return None
     #expand node by getting the neighbours ( ojo que ell mateix estarà inclòs)
     #if neighbour contains goal state, return solution
     while True:
-        #remove node from the frontier
+        #if the frontier is empty, then return no solution
+        if frontier.empty():
+            return None
+        #add initial state to the frontier
         node = frontier.remove()
-        #add node to the explored
+        #check if the current state of the node is the target
+        if node.state == target:
+            solution = []
+            while node.parent is not None:
+                solution.append((node.action,node.state))
+                node = node.parent
+                solution.reverse()
+                return solution
+        #add node's state to the explored
         explored.add(node.state)
+        #print(node.state)
         #get neighbours
         neighbours = neighbors_for_person(node.state) #dictionary made of lists that contain MovieID, personID
         #iterate 
         for movie, person in neighbours:
             #if it's not in the froniter now in the explored
             if not frontier.contains_state(person) and person not in explored:
-                new = Node(person,node,movie)
-            #if target in node, return solution
-            if new.state == target:
-                solution = []
-                while new.parent is not None:
-                    solution.append((new.action,new.state))
-                    new = new.parent
-                solution.reverse()
-                return solution
-            #add to the frontier and repeat the process
-            frontier.add(new)
+                next = Node(person,node,movie)
+                #print(next)
+                #if target in child node, return solution
+                if next.state == target:
+                    solution = []
+                    while next.parent is not None:
+                        solution.append((next.action,next.state))
+                        #print(solution)
+                        next = next.parent
+                    solution.reverse()
+                    return solution
+                #add to the frontier and repeat the process
+                frontier.add(next)
 
 def person_id_for_name(name):
     """
