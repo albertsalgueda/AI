@@ -96,7 +96,7 @@ def load_data(filename):
         for row in reader:
             data.append({
                 "evidence": [str(cell) for cell in row[0:len(row)-1]],
-                "label": 1 if row[-1:0] == "TRUE" else 0
+                "label": [cell for cell in row[-1:]]
             })
         #print(data[0]['evidence'])
         #data type transformation
@@ -119,11 +119,13 @@ def load_data(filename):
             data[i]['evidence'][14] = float(data[i]['evidence'][14])
             data[i]['evidence'][15] = 1 if data[i]['evidence'][15] == 'Returning_Visitor' else False
             data[i]['evidence'][16] = True if data[i]['evidence'][16] == 'TRUE' else False
+            data[i]['label'] = 0 if data[i]['label'] == ['FALSE'] else 1
                 
-                
-    #print(data[0])
-    print('completed')
-    return(tuple(data['evidence'],data['labels']))
+    #print('completed')
+    evidence = [row["evidence"] for row in data]
+    labels = [row["label"] for row in data]
+    #print(labels)
+    return(evidence,labels)
 
 
 def train_model(evidence, labels):
@@ -131,8 +133,9 @@ def train_model(evidence, labels):
     Given a list of evidence lists and a list of labels, return a
     fitted k-nearest neighbor model (k=1) trained on the data.
     """
-    raise NotImplementedError
-
+    model = KNeighborsClassifier(n_neighbors=1)
+    return model.fit(evidence, labels)
+    
 
 def evaluate(labels, predictions):
     """
@@ -149,7 +152,30 @@ def evaluate(labels, predictions):
     representing the "true negative rate": the proportion of
     actual negative labels that were accurately identified.
     """
-    raise NotImplementedError
+    #print(labels)
+    # Compute how well we performed in true positive rate
+    correct_true = 0
+    correct_false = 0
+    incorrect_true = 0
+    incorrect_false = 0
+    #zip function lets me look at multiple lists at the same time 
+    for actual, predicted in zip(labels, predictions):
+        if actual == predicted:
+            if actual == 1:
+                correct_true += 1
+            elif actual == 0:
+                correct_false += 1
+        else:
+            if actual == 1:
+                incorrect_true += 1
+            elif actual == 0:
+                incorrect_false += 1
+            
+    
+    sensitivity = correct_true/(correct_true+incorrect_true)
+    specificity = correct_false/(correct_false+incorrect_false)
+    
+    return sensitivity, specificity
 
 
 if __name__ == "__main__":
