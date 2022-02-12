@@ -171,7 +171,6 @@ def evaluate(labels, predictions):
             elif actual == 0:
                 incorrect_false += 1
             
-    
     sensitivity = correct_true/(correct_true+incorrect_true)
     specificity = correct_false/(correct_false+incorrect_false)
     
