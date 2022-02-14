@@ -1,10 +1,12 @@
-import cv2
+import cv2 
 import numpy as np
 import os
 import sys
 import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
+
+# python3 traffic.py small model
 
 EPOCHS = 10
 IMG_WIDTH = 30
@@ -58,7 +60,27 @@ def load_data(data_dir):
     be a list of integer labels, representing the categories for each of the
     corresponding `images`.
     """
-    raise NotImplementedError
+    images = []
+    labels = []
+    directory = os.listdir(data_dir)
+    for subcategory in directory:
+        print("loading...")
+        #use os.path to make it universal
+        #iterate over every image of the subdirectory
+        if subcategory != '.DS_Store':
+            for file in os.listdir(os.path.join(data_dir, subcategory)):
+                #read image using cv2
+                image = cv2.imread(os.path.join(data_dir, subcategory, file),cv2.IMREAD_COLOR)
+                #resize image 
+                resized = cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT))
+                #image_array = np.ndarray(shape=(IMG_WIDTH,IMG_HEIGHT))
+                #append image and label
+                images.append(resized)
+                labels.append(int(subcategory))
+        print(f"Ended loading files from {subcategory} subdirectory")
+    print(images[0])
+    #print(labels)
+    return images, labels
 
 
 def get_model():
@@ -67,7 +89,28 @@ def get_model():
     `input_shape` of the first layer is `(IMG_WIDTH, IMG_HEIGHT, 3)`.
     The output layer should have `NUM_CATEGORIES` units, one for each category.
     """
-    raise NotImplementedError
+    # Create a convolutional neural network
+    model = tf.keras.models.Sequential([
+
+    # Convolutional layer. Learn 32 filters using a 3x3 kernel
+    tf.keras.layers.Conv2D(
+        32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
+    ),
+
+    # Max-pooling layer, using 2x2 pool size
+    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
+
+    # Flatten units
+    tf.keras.layers.Flatten(),
+
+    # Add a hidden layer with dropout
+    tf.keras.layers.Dense(128, activation="relu"),
+    tf.keras.layers.Dropout(0.5),
+
+    # Add an output layer with output units for all 10 digits
+    tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+    ])
+    return model
 
 
 if __name__ == "__main__":
