@@ -6,9 +6,9 @@ import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
 
-# python3 traffic.py small model
+# python3 traffic.py small data
 
-EPOCHS = 10
+EPOCHS = 5
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
 NUM_CATEGORIES = 43
@@ -73,12 +73,11 @@ def load_data(data_dir):
                 image = cv2.imread(os.path.join(data_dir, subcategory, file),cv2.IMREAD_COLOR)
                 #resize image 
                 resized = cv2.resize(image, (IMG_WIDTH, IMG_HEIGHT))
-                #image_array = np.ndarray(shape=(IMG_WIDTH,IMG_HEIGHT))
                 #append image and label
                 images.append(resized)
                 labels.append(int(subcategory))
         print(f"Ended loading files from {subcategory} subdirectory")
-    print(images[0])
+    #print(images[0])
     #print(labels)
     return images, labels
 
@@ -93,11 +92,12 @@ def get_model():
     model = tf.keras.models.Sequential([
 
     # Convolutional layer. Learn 32 filters using a 3x3 kernel
+    #define the input as (IMG_WIDTH, IMG_HEIGHT, 3)
     tf.keras.layers.Conv2D(
         32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
     ),
 
-    # Max-pooling layer, using 2x2 pool size
+    # Max-pooling layer, using 3x3 pool size
     tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
 
     # Flatten units
@@ -105,11 +105,17 @@ def get_model():
 
     # Add a hidden layer with dropout
     tf.keras.layers.Dense(128, activation="relu"),
-    tf.keras.layers.Dropout(0.5),
+    tf.keras.layers.Dropout(0.4),
 
     # Add an output layer with output units for all 10 digits
     tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
     ])
+    #compile the model
+    model.compile(
+        optimizer="adam",
+        loss="categorical_crossentropy",
+        metrics=["accuracy"]
+    )
     return model
 
 
