@@ -105,17 +105,19 @@ def get_model():
 
     # Add a hidden layer with dropout
     tf.keras.layers.Dense(128, activation="relu"),
-    tf.keras.layers.Dropout(0.4),
+    tf.keras.layers.Dropout(0.5),
 
     # Add an output layer with output units for all 10 digits
     tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
     ])
+
     #compile the model
     model.compile(
         optimizer="adam",
         loss="categorical_crossentropy",
         metrics=["accuracy"]
     )
+
     return model
 
 
