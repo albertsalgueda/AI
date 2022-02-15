@@ -6,9 +6,9 @@ import tensorflow as tf
 
 from sklearn.model_selection import train_test_split
 
-# python3 traffic.py small data
+# python3 traffic.py data model
 
-EPOCHS = 5
+EPOCHS = 10
 IMG_WIDTH = 30
 IMG_HEIGHT = 30
 NUM_CATEGORIES = 43
@@ -90,27 +90,20 @@ def get_model():
     """
     # Create a convolutional neural network
     model = tf.keras.models.Sequential([
-
-    # Convolutional layer. Learn 32 filters using a 3x3 kernel
-    #define the input as (IMG_WIDTH, IMG_HEIGHT, 3)
-    tf.keras.layers.Conv2D(
-        32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)
-    ),
-
-    # Max-pooling layer, using 3x3 pool size
-    tf.keras.layers.MaxPooling2D(pool_size=(2, 2)),
-
-    # Flatten units
-    tf.keras.layers.Flatten(),
-
-    # Add a hidden layer with dropout
-    tf.keras.layers.Dense(128, activation="relu"),
-    tf.keras.layers.Dropout(0.5),
-
-    # Add an output layer with output units for all 10 digits
-    tf.keras.layers.Dense(NUM_CATEGORIES, activation="softmax")
+        #define the input as (IMG_WIDTH, IMG_HEIGHT, 3)
+        tf.keras.layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+        #add max-pooling layer 
+        tf.keras.layers.MaxPooling2D(2,2), 
+        #add another convulsion layer
+        tf.keras.layers.Conv2D(32, (3, 3), activation="relu"),
+        #and another max pooling
+        tf.keras.layers.MaxPooling2D(2,2),
+        tf.keras.layers.Flatten(),
+        #add a dense layer of 128 neurons
+        tf.keras.layers.Dense(128,activation= tf.nn.relu),
+        # Add an output layer with output units for all 10 digits
+        tf.keras.layers.Dense(NUM_CATEGORIES, activation=tf.nn.softmax)
     ])
-
     #compile the model
     model.compile(
         optimizer="adam",
