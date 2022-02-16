@@ -7,7 +7,7 @@ import math
 import collections
 
 FILE_MATCHES = 1
-SENTENCE_MATCHES = 3
+SENTENCE_MATCHES = 1
 
 
 def main():
@@ -75,7 +75,7 @@ def tokenize(document):
     tokens = word_tokenize(stringed_doc)
     words = []
     for word in tokens:
-        if word.isalpha() and word != "https":
+        if word.isalpha() and word != "https" and word not in nltk.corpus.stopwords.words("english"):
             words.append(word)
     return words
 
@@ -160,23 +160,34 @@ def top_sentences(query, sentences, idfs, n):
     query_sentences = {}
     word_density = {}
     for sentence in sentences:
+        scoring = 0
         for word in query:
-            scoring = []
             density = []
             if word in sentences[sentence]:
                 #find words' idf scoring
                 idfscore = float(idfs[word])
-                scoring.append(idfscore)
+                scoring = scoring+idfscore
         query_sentences[sentence] = scoring
-
+    #compute word density
     for sentence in sentences:
+        match = 0
+        for word in sentences[sentence]:
+            if word in query:
+                match += 1
         #calculate word density
-        word_density = len(query_sentences[sentence])/len(sentence)
-        #word_density[sentence] = [word_density]
-        #TypeError: 'float' object does not support item assignment
-        query_sentences[sentence] = float(sum(query_sentences[sentence]))
+        dens = match/len(sentences[sentence])
+        word_density[sentence] = dens
     top_sentences = dict(sorted(query_sentences.items(), key=lambda item: item[1]))
     #check if there are two with the same scoring
+    max_score = max(top_sentences.values())
+    best = {}
+    #If two sentences have the same value according to the matching word measure
+    for sentence in sentences:
+        if query_sentences[sentence] == max_score:
+            #then sentences with a higher “query term density” should be preferred.
+            best[sentence] = query_sentences[sentence]+word_density[sentence]
+
+    top_sentences = dict(sorted(best.items(), key=lambda item: item[1]))
     #choose the one with the highest word density
     top = list(top_sentences.keys())
     top.reverse()
