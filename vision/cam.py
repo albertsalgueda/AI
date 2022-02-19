@@ -16,6 +16,6 @@ while(True):
     if cv2.waitKey(1) & 0xFF == ord('q'):
         out = cv2.imwrite('capture.jpg', frame)
         break
-
+    
 cap.release()
 cv2.destroyAllWindows()
