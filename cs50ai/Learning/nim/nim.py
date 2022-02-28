@@ -1,9 +1,6 @@
-from ast import Pass
 import math
 import random
 import time
-
-from pyrsistent import v
 
 
 class Nim():
