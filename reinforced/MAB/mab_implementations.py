@@ -32,105 +32,6 @@ class Environment(object):
 
 env = Environment(reward_probabilities=[0.62, 0.05, 0.87, 0.49], actual_rewards=[1.0, 1.0, 1.0, 1.0])
 
-[env.choose_arm(1) for _ in range(10)]
-
-[env.choose_arm(2) for _ in range(10)]
-
-[env.choose_arm(0) for _ in range(10)]
-
-[env.choose_arm(3) for _ in range(10)]
-
-
-
-"""### Calculationg Average Through Incremental Sampling
-
-The obvious way to calculate the average of a finite set of numbers it to sum the list of numbers and divide by the length of the list. However, it is not always feasible to store all numbers into a list before calculating their average. The incremental sampling technique is a memory-efficient way of estimating the average of a larger collection of numbers on the fly. See the formular below and let's turn that into code : 
-
- **new_estimage = old_estimate + (1/n) * (reward - old_estimate)**
-
-or more generally,
-
-**new_estimage = old_estimate + (step_size) * (reward - old_estimate)**
-
-Now, let's translate this formula into code.
-
-"""
-
-
-
-"""### Incremental Sampling For Non-Stationary Bandit Problems
-
-**new_estimage = old_estimate + (1/n) * (reward - old_estimate)**
-
-In the incremental sampling formular above, the term **(1/n)** gets smaller as **n** gets larger. This means that, rewards from later time steps contribute little to the new estimate of the average and this makes it unfit for bandit problems with non-stationary reward distributions. To curb this, another form of this formula with a **fixed** step size should be used. The step size must be a number between **0 and 1**. This way, rewards from later time steps contribute more to the estimation of the average and this makes it fit for non-stationary bandit problems. The following general update rule is very common throughout Reinforcement Learning especially in Temporal Difference learning algorithms.
-
-**new_estimage = old_estimate + (step_size) * (reward - old_estimate)**
-
-Let's verify this in code.
-"""
-
-time_steps = np.arange(1,50)
-weights = 1/time_steps
-
-plt.plot(time_steps, weights)
-
-
-
-"""### Implementing A Random-Behaving Agent"""
-
-class RandomAgent(object):
-
-  def __init__(self, env, max_iterations=500):
-    self.env = env
-    self.iterations = max_iterations
-
-    self.q_values = np.zeros(self.env.k_arms)
-    self.arm_counts = np.zeros(self.env.k_arms)
-    self.arm_rewards = np.zeros(self.env.k_arms)
-
-    self.rewards = [0.0]
-    self.cum_rewards = [0.0]
-
-  def act(self):
-    for i in range(self.iterations):
-      arm = np.random.choice(self.env.k_arms)
-      reward = self.env.choose_arm(arm)
-
-      self.arm_counts[arm] = self.arm_counts[arm] + 1
-      self.arm_rewards[arm] = self.arm_rewards[arm] + reward
-
-      self.q_values[arm] = self.q_values[arm] + (1/self.arm_counts[arm]) * (reward - self.q_values[arm])
-      self.rewards.append(reward)
-      self.cum_rewards.append(sum(self.rewards) / len(self.rewards))
-
-    return {"arm_counts": self.arm_counts, "rewards": self.rewards, "cum_rewards": self.cum_rewards}
-
-test_env = Environment(reward_probabilities=[0.62, 0.05, 0.87, 0.49], actual_rewards=[1.0, 1.0, 1.0, 1.0])
-random_agent = RandomAgent(test_env)
-random_agent_result = random_agent.act()
-
-total_rewards = sum(random_agent_result["rewards"])
-print(f"Total Reward : {total_rewards}")
-
-cum_rewards = random_agent_result["cum_rewards"]
-arm_counts = random_agent_result["arm_counts"]
-
-fig = plt.figure(figsize=[30,10])
-
-ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(random_agent.iterations)], "g--", label="target cummulative reward")
-ax1.plot(cum_rewards, label="cummulative rewards")
-ax1.set_xlabel("Time steps")
-ax1.set_ylabel("Cummulative rewards")
-
-ax2 = fig.add_subplot(122)
-ax2.bar([i for i in range(len(arm_counts))], arm_counts)
-
-print(f"Environment Reward Probabilities : {test_env.reward_probabilities}")
-print(f"Random Agent Action Values : {random_agent.q_values}")
-
-
-
 """### Implementing A Greedy Agent"""
 
 class GreedyAgent(object):
@@ -173,7 +74,7 @@ arm_counts = greedy_agent_result["arm_counts"]
 fig = plt.figure(figsize=[30,10])
 
 ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(greedy_agent.iterations)], "g--", label="target cummulative reward")
+ax1.plot([.87 for _ in range(greedy_agent.iterations)], "g--", label="target cummulative reward")
 ax1.plot(cum_rewards, label="cummulative rewards")
 ax1.set_xlabel("Time steps")
 ax1.set_ylabel("Cummulative rewards")
@@ -183,8 +84,6 @@ ax2.bar([i for i in range(len(arm_counts))], arm_counts)
 
 print(f"Environment Reward Probabilities : {test_env.reward_probabilities}")
 print(f"Random Agent Action Values : {greedy_agent.q_values}")
-
-
 
 """### Balancing Exploration & Exploitation With Epsilon-Greedy Agents"""
 
@@ -234,7 +133,7 @@ arm_counts = egreedy_agent_result["arm_counts"]
 fig = plt.figure(figsize=[30,10])
 
 ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(egreedy_agent.iterations)], "g--", label="target cummulative reward")
+ax1.plot([.87 for _ in range(egreedy_agent.iterations)], "g--", label="target cummulative reward")
 ax1.plot(cum_rewards, label="cummulative rewards")
 ax1.set_xlabel("Time steps")
 ax1.set_ylabel("Cummulative rewards")
@@ -244,8 +143,6 @@ ax2.bar([i for i in range(len(arm_counts))], arm_counts)
 
 print(f"Environment Reward Probabilities : {test_env.reward_probabilities}")
 print(f"Random Agent Action Values : {egreedy_agent.q_values}")
-
-
 
 """### Intelligent Exploration With Softmax/Boltzmann Distribution
 
@@ -301,15 +198,13 @@ arm_counts = softmax_agent_result["arm_counts"]
 fig = plt.figure(figsize=[30,10])
 
 ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(softmax_agent.iterations)], "g--", label="target cummulative reward")
+ax1.plot([.87 for _ in range(softmax_agent.iterations)], "g--", label="target cummulative reward")
 ax1.plot(cum_rewards, label="cummulative rewards")
 ax1.set_xlabel("Time steps")
 ax1.set_ylabel("Cummulative rewards")
 
 ax2 = fig.add_subplot(122)
 ax2.bar([i for i in range(len(arm_counts))], arm_counts)
-
-
 
 """### Inducing Exploration With Optimistic Initialization (Optimism in the face of uncertainty)
 
@@ -362,7 +257,7 @@ arm_counts = optimistic_agent_result["arm_counts"]
 fig = plt.figure(figsize=[30,10])
 
 ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(optimistic_agent.iterations)], "g--", label="target cummulative reward")
+ax1.plot([.87 for _ in range(optimistic_agent.iterations)], "g--", label="target cummulative reward")
 ax1.plot(cum_rewards, label="cummulative rewards")
 ax1.set_xlabel("Time steps")
 ax1.set_ylabel("Cummulative rewards")
@@ -373,9 +268,7 @@ ax2.bar([i for i in range(len(arm_counts))], arm_counts)
 print(f"Environment Reward Probabilities : {test_env.reward_probabilities}")
 print(f"Random Agent Action Values : {optimistic_agent.q_values}")
 
-
-
-"""### Realistic Optimism With The Upper Confidence Bounds (UCB) Algorithm
+"""# Realistic Optimism With The Upper Confidence Bounds (UCB) Algorithm
 
 There are two fundamental issues with the Optimistic Initialization strategy that we implemented in the previous section: 
 
@@ -434,7 +327,7 @@ arm_counts = ucb_agent_result["arm_counts"]
 fig = plt.figure(figsize=[30,10])
 
 ax1 = fig.add_subplot(121)
-ax1.plot([1.0 for _ in range(ucb_agent.iterations)], "g--", label="target cummulative reward")
+ax1.plot([0.87 for _ in range(ucb_agent.iterations)], "g--", label="target cummulative reward")
 ax1.plot(cum_rewards, label="cummulative rewards")
 ax1.set_xlabel("Time steps")
 ax1.set_ylabel("Cummulative rewards")
