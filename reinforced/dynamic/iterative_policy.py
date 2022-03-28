@@ -55,25 +55,25 @@ if __name__ == '__main__':
     V = {}
     #initialize 
     for s in grid.all_states():
-        V[s]= 0 
+        V[s] = 0 
 
     gamma = 0.9
     lam = 0.001
     i = 0
     while True:
-        i += 1
-        change = 0.0
+        biggest_change = 0
         for s in grid.all_states():
             if not grid.is_terminal(s):
-                v_old = V[s]
-                new = bellman(s,gamma,V)
-            # after done getting the new value, update the value table
-            V[s] = new
-            change = max(change, np.abs(v_old - V[s]))
-            print('\n')
-            print_values(V, grid)
-            print(f'Iteration {i}\n')
-        if change < lam:
+                old_v = V[s]
+                new_v = bellman(s,gamma,V)
+                 # after done getting the new value, update the value table
+                V[s] = new_v
+                biggest_change = max(biggest_change, np.abs(old_v - V[s]))
+        print(f'{biggest_change}\n')
+        print_values(V, grid)
+        print('\n')
+
+        if biggest_change < lam:
             break
 
 
