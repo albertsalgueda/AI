@@ -2,6 +2,7 @@ import nltk
 import os
 import sys
 
+#DATA FROM: https://www.cs.jhu.edu/~mdredze/datasets/sentiment/
 
 def main():
 
@@ -24,10 +25,15 @@ def main():
 
     # Classify a new sample
     classifier = nltk.NaiveBayesClassifier.train(training)
-    s = input("s: ")
-    result = (classify(classifier, s, words))
-    for key in result.samples():
-        print(f"{key}: {result.prob(key):.4f}")
+    a = True
+    while a:
+        s = input("s: ")
+        result = (classify(classifier, s, words))
+        for key in result.samples():
+            print(f"{key}: {result.prob(key):.4f}")
+        a = input('to stop (s) or enter, introduce any key to continue ')
+        if a == 's':
+            a = False
 
 
 def extract_words(document):

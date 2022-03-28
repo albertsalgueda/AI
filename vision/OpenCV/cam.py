@@ -33,6 +33,7 @@ while True:
     roi = frame[-size-10:10,-size-10:10] 
     roi[np.where(mask)] = 0
     roi += logo
+    
     # Show the frame in a window
     cv2.imshow("cam",frame)
 
