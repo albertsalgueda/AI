@@ -6,13 +6,17 @@ These are some of my projects in the field of Artificial Intelligence with Pytho
 
 In the overview folder you will find interesting projects from cs50ai related to the main areas of artificial intelligence. 
 
+## Reinforced
+
+In the reinforced Folder you may find RL-implementation: multi armed bandit, bellman's equation, grid-world problems...
+
 ## Vision
 
 In the Vision Folder you will find computer vision related projects. 
 
-## Reinforced
+## Genetic 
 
-In the reinforced Folder you may find RL-implementation: multi armed bandit, bellman's equation, grid-world projec
+Simple implementation of genetic algorithms with python. 
 
 ## Augmented ( under dev.. )
 
