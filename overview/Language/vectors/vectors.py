@@ -4,6 +4,8 @@ import math
 import numpy as np
 #words.txt is a pretraned model ( word2vec )
 with open("words.txt") as f:
+    print(len(f))
+    print('hei')
     words = dict()
     for i in range(50000):
         row = next(f).split()
