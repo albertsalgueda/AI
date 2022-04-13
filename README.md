@@ -2,6 +2,8 @@
 
 These are some of my projects in the field of Artificial Intelligence with Python. I hope you find them interesting, feel free to use any of the code inside of this repository. 
 
+NOTE: I have moved my HTM system development to this [repo] (https://github.com/albertsalgueda/htm)
+
 ## Start here ( overview )
 
 In the overview folder you will find interesting projects from cs50ai related to the main areas of artificial intelligence. 
